@@ -10,3 +10,9 @@ class Card():
         self.__face = (choice(possible_cards[0], 1),
                        choice(possible_cards[1], 1))
         self.__value = int_parse(choice(possible_cards[1], 1))
+
+    def get_value(self):
+        return self.__value
+
+    def get_face(self):
+        return self.__face

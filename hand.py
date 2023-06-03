@@ -1,4 +1,4 @@
-from numpy import random
+from card import Card
 
 
 class Hand:
@@ -9,15 +9,17 @@ class Hand:
 
     def show_hand(self):
         for card in self.__cards:
-            print(f"{card[0][0]},{card[1][0]}", end=" | ")
+            print(
+                f"{card.get_face()[0][0]},{card.get_face()[1][0]}", end=" | ")
         print("")
 
     def deal_hand(self, possible_cards):
         for i in range(len(possible_cards)):
-            self.__cards.append(
-                (random.choice(possible_cards[0], 1)[0], random.choice(possible_cards[1], 1)[0]))
+            card = Card()
+            card.pick_card(possible_cards)
+            self.__cards.append(card)
         while self.__cards[0] == self.__cards[1]:
-            self.deal_hand(self, possible_cards[0], possible_cards[1])
+            self.deal_hand(self, possible_cards)
             return
 
     def calculate_equity(self):

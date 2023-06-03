@@ -17,7 +17,6 @@ def main():
     table.flop(possible_cards)
     table.turn(possible_cards)
     table.river(possible_cards)
-    print(int_parse("A"), int_parse("D"))
 
 
 if __name__ == "__main__":

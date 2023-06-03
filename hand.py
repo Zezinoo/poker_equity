@@ -1,4 +1,3 @@
-import numpy as np
 from numpy import random
 
 
@@ -23,5 +22,6 @@ class Hand:
 
     def calculate_equity(self):
         pass
+
     def get_cards(self):
         return self.__cards

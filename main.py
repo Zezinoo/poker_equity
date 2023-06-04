@@ -12,7 +12,7 @@ possible_cards = (possible_figures, possible_suits)
 def main():
     # PairTest
     ini_hand = [Card(face=("10", "C")), Card(face=("9", "H"))]
-    initial = [("A", "D"), ("A", "S"), ("A", "H"), ("A", "C"), ("10", "D")]
+    initial = [("A", "D"), ("10", "S"), ("A", "H"), ("A", "C"), ("10", "D")]
     ini_table = []
     for card in initial:
         ini_table.append(Card(face=card))
@@ -24,7 +24,7 @@ def main():
     table.show_table()
     for card in hand.get_cards():
         print(card.get_value())
-        print(comb.pair(table, card))
+        comb.pair(table, card)
 #    table.flop(possible_cards)
 #    table.turn(possible_cards)
 #    table.river(possible_cards)

@@ -1,4 +1,14 @@
 Implement combination calculations :
 -> one method for each combination
+--> Pair <DONE>
+--> TwoPair 
+--> Tofak <DONE>
+--> Straight
+--> Flush
+--> Full House
+--> Fofak
+--> StraightFlush
+--> RoyalFlush
+
 Implement combination comparation:
 -> Define Sklansky Groups

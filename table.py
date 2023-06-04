@@ -3,9 +3,12 @@ from hand import Hand
 
 
 class Table(object):
-    def __init__(self, hand: Hand):
-        self.__table_cards = []
+    def __init__(self, hand: Hand, r_hand=(), initial_cards=[]):
+        self.__table_cards = initial_cards
         self.__hand = hand
+
+    def get_table_cards(self):
+        return self.__table_cards
 
     def turn_card(self, possible_cards):
         card = (choice(possible_cards[0]), choice(possible_cards[1]))
@@ -39,9 +42,8 @@ class Table(object):
     def show_table(self):
         print("Cartas na mesa")
         for card in self.__table_cards:
-            print(card, end=" | ")
+            print(card.get_face(), end=" | ")
         print("")
 
     def calculate_combinations(self, possible_cards):
         pass
-        # HighCard, Pair, TwoPair , TOFAK , Straight , Flush , FullHouse , FOFAK , StraightFlush , RoyalFlush

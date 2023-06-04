@@ -3,14 +3,15 @@ from card import Card
 
 class Hand:
 
-    def __init__(self):
-        self.__cards = []
+    def __init__(self, initial_cards=[]):
+        self.__cards = initial_cards
         self.__equity = 0
 
     def show_hand(self):
+        print("Cartas na mão")
         for card in self.__cards:
             print(
-                f"{card.get_face()[0][0]},{card.get_face()[1][0]}", end=" | ")
+                f"{card.get_face()[0]},{card.get_face()[1]}", end=" | ")
         print("")
 
     def deal_hand(self, possible_cards):

@@ -1,4 +1,3 @@
-Implement Card class -> tuple with value attribute -> useful for high card computations.
 Implement combination calculations :
 -> one method for each combination
 Implement combination comparation:

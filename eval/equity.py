@@ -74,8 +74,6 @@ r_villain = eval7.HandRange(S_2)
 binary = []
 all_binaries = []
 flop = []
-f_suits = [card.suit for card in flop]
-f_ranks = [card.rank for card in flop]
 h_suits = [card.suit for card in hero]
 h_ranks = [card.rank for card in hero]
 # Individual Broadway F1-15
@@ -88,40 +86,27 @@ def check_i_broadway(f_ranks, binary, rank):
             acc += 1
     if acc == 0:
         binary.extend([0, 0, 1])
-    if acc == 1:
+    elif acc == 1:
         binary.extend([1, 0, 0])
-    if acc >= 2:
+    elif acc >= 2:
         binary.extend([1, 1, 0])
 
 
-# Aces
-check_i_broadway(flop, binary, 12)
-# Kings
-check_i_broadway(flop, binary, 11)
-# Queens
-check_i_broadway(flop, binary, 10)
-# Jacks
-check_i_broadway(flop, binary, 9)
-# Tens
-check_i_broadway(flop, binary, 8)
-
-# Suits
-
-
-def check_suits(f_suits, f_rank, binary):
+def check_suits(f_suits, f_rank, binary, flop):
     temp = set(f_suits)
     suits = len(temp)
     if suits == 1:
         binary.extend([1, 0, 0, 0])
     elif suits == 2:
-        if 12 in f_rank:
-            binary.extend([0, 1, 0, 1])
-            return
+        for card in flop:
+            if card.rank == 12 and f_suits.count(card.suit) == 2:
+                binary.extend([0, 1, 0, 1])
+                return
         else:
-            binary.extend([0, 1, 0])
+            binary.extend([0, 1, 0, 0])
 
     elif suits == 3:
-        binary.extend([0, 0, 1])
+        binary.extend([0, 0, 1, 0])
 
 # Ranks
 
@@ -145,9 +130,11 @@ def check_paint(f_ranks, binary):
     if paints == 1:
         binary.extend([1, 0, 0])
     elif paints == 2:
-        binary.extend([1, 1, 0])
+        binary.extend([0, 1, 0])
     elif paints == 3:
-        binary.extend([1, 1, 1])
+        binary.extend([0, 1, 1])
+    else:
+        binary.extend([0, 0, 0])
 
 # Broadways
 
@@ -172,15 +159,17 @@ def check_cards_size(f_ranks, binary):
     small = [rank for rank in f_ranks if rank < 5]
     if len(medium) == 3:
         binary.extend([1, 0, 0, 0])
-    if len(small) == 3:
+    elif len(small) == 3:
         temp = set(small)
         if len(temp) == 3:
             if '4' not in temp:
                 binary.extend([0, 1, 0, 1])
         else:
             binary.extend([0, 1, 0, 0])
-    if len(small) + len(medium) == 3:
+    elif len(small) + len(medium) == 3:
         binary.extend([0, 0, 1, 0])
+    else:
+        binary.extend([0, 0, 0, 0])
 
 # Straight
 
@@ -189,17 +178,24 @@ def check_straight(f_ranks, binary):
     temp = missing_elements(f_ranks)
     gaps = len(temp)
     if gaps == 0:
-        binary.extend([1, 0, 0, 0])
+        binary.extend([1, 0, 0, 0, 0])
+    elif gaps == 1:
+        binary.extend([0, 1, 0, 0, 0])
     elif gaps == 2:
-        binary.extend([0, 1, 0, 0])
+        binary.extend([0, 0, 1, 0, 0])
     elif gaps == 3:
-        binary.extend([0, 0, 1, 0])
+        binary.extend([0, 0, 0, 1, 0])
     elif gaps > 3:
-        binary.extend([0, 1, 0, 1])
+        binary.extend([0, 0, 0, 0, 1])
 
 
 # Testing
 for flop in comb:
+
+    binary = []
+    f_suits = [card.suit for card in flop]
+    f_ranks = [card.rank for card in flop]
+
     # F1-15
     # Aces
     check_i_broadway(flop, binary, 12)
@@ -212,7 +208,7 @@ for flop in comb:
 # Tens
     check_i_broadway(flop, binary, 8)
 # Suits
-    check_suits(f_suits, f_ranks, binary)
+    check_suits(f_suits, f_ranks, binary, flop)
 # Ranks
     check_ranks(f_ranks, binary)
 # Paint
@@ -223,19 +219,25 @@ for flop in comb:
     check_cards_size(f_ranks, binary)
 # Straight
     check_straight(f_ranks, binary)
+    if (len(binary) != 38):
+        print(len(binary))
+        pprint(flop)
 # Eval
     binary.append(eval7.py_hand_vs_range_exact(hero, r_villain, flop))
     all_binaries.append(binary)
+    binary = []
 
 
 # Modelo
 for i in progressbar(range(100)):
     #
-    opt_model = cpx.Model(name="AVGERROR Model")
+    #    opt_model = cpx.Model(name="AVGERROR Model")
+    opt_model = cpx.Model(name="MINFEATURES")
 # Parameters
     N_FEATURES = 10
+    ERROR_BOUND = 0.2
     m = 19600  # Number of Flops
-    n = 73  # Number of Features
+    n = 38  # Number of Features
     b = all_binaries  # nxm Matrix
 #
 #
@@ -247,15 +249,15 @@ for i in progressbar(range(100)):
 #
 # epsilon is real nonnegative
 #
-    eps_vars = {(i): opt_model.continuous_var(
+    eps_vars = {i: opt_model.continuous_var(
         lb=0, name="eps_{0}".format(i)) for i in range(m)}
 
 # x_j is real , and a probability
 #
-    x_vars = {(m+j): opt_model.continuous_var(
+    x_vars = {j: opt_model.continuous_var(
         lb=-1, ub=1, name="x_{0}".format(j)) for j in range(n)}
 # y_j is binary
-    y_vars = {(m+n+j): opt_model.binary_var(
+    y_vars = {j: opt_model.binary_var(
         name="y_{0}".format(j)) for j in range(n)}
 #
 # Constraint 2
@@ -266,28 +268,28 @@ for i in progressbar(range(100)):
                           for j in range(n)
                           }
 
-    xy_geq_constraints = {n + j:
+    xy_geq_constraints = {j:
                           opt_model.add_constraint(
-                              ct=x_vars[j] >= y_vars[j],
+                              ct=x_vars[j] >= - y_vars[j],
                               ctname="xy_cstr{0}".format(j))
                           for j in range(n)
                           }
 # Constraint 3
-    y_leq_constraints = {j + 2*n:
-                         opt_model.add_constraint(
-                             ct=y_vars[j] <= N_FEATURES,
-                             ctname="y_cstr{0}".format(j))
-                         for j in range(n)}
+#    y_leq_constraints = {j :
+#                         opt_model.add_constraint(
+#                             ct=y_vars[j] <= N_FEATURES,
+#                             ctname="y_cstr{0}".format(j))
+#                         for j in range(n)}
 # Constraint 6
 
-    eps_leq_constraints = {i + 3*n:
+    eps_leq_constraints = {i:
                            opt_model.add_constraint(
                                ct=opt_model.sum(b[i][j] * x_vars[j]
                                                 for j in range(n))
                                <= b[i][-1] + eps_vars[i],
                                ctname="eps_cstr{0}".format(i))
                            for i in range(m)}
-    eps_geq_constraints = {m + 3*n + i:
+    eps_geq_constraints = {i:
                            opt_model.add_constraint(
                                ct=opt_model.sum(b[i][j] * x_vars[j]
                                                 for j in range(n))
@@ -295,34 +297,56 @@ for i in progressbar(range(100)):
                                ctname="eps_cstr{0}".format(i))
                            for i in range(m)}
 
-# Objective function
+# Constraint 7
+    opt_model.add_constraint(ct=(
+        1/m)*opt_model.sum(eps_vars[i] for i in range(m)) <= ERROR_BOUND, ctname="csrt7")
 
-    objective = (1/m)*opt_model.sum(eps_vars[i] for i in range(m))
+# Objective function for AVGERROR
+
+#    objective = (1/m)*opt_model.sum(eps_vars[i] for i in range(m))
+
+# Objective function for FEAT_AVGERROR
+    objective = opt_model.sum(y_vars[j] for j in range(n))
 
     opt_model.minimize(objective)
 
 # Solving
+    solution = opt_model.solve()
+    print(solution.get_value_dict(x_vars))
 
-    opt_model.solve()
+details = opt_model.solve_details
+print(details.problem_type)
+print(details.status)
+solution.print_mst()
+#
+#
+#
+#
+#
+#
+#
+
 
 # Catching output
-    x_df = pd.DataFrame.from_dict(x_vars, orient="index",
-                                  columns=["variable_object"])
-    y_df = pd.DataFrame.from_dict(y_vars, orient="index",
-                                  columns=["variable_object"])
-    eps_df = pd.DataFrame.from_dict(eps_vars, orient="index",
-                                    columns=["variable_object"])
-
-    x_df["solution_value"] = x_df["variable_object"].apply(
-        lambda item: item.solution_value)
-    y_df["solution_value"] = x_df["variable_object"].apply(
-        lambda item: item.solution_value)
-    eps_df["solution_value"] = x_df["variable_object"].apply(
-        lambda item: item.solution_value)
-
-x_df.drop(columns=["variable_object"], inplace=True)
-x_df.to_csv("./optimization_solution.csv")
-y_df.drop(columns=["variable_object"], inplace=True)
-y_df.to_csv("./optimization_solution.csv")
-eps_df.drop(columns=["variable_object"], inplace=True)
-eps_df.to_csv("./optimization_solution.csv")
+# x_df = pd.DataFrame.from_dict(x_vars, orient="index",
+#                              columns=["variable_object"])
+# y_df = pd.DataFrame.from_dict(y_vars, orient="index",
+#                              columns=["variable_object"])
+# eps_df = pd.DataFrame.from_dict(eps_vars, orient="index",
+#                                columns=["variable_object"])
+#
+# x_df["solution_value"] = x_df["variable_object"].apply(
+#    lambda item: item.solution_value)
+# y_df["solution_value"] = y_df["variable_object"].apply(
+#    lambda item: item.solution_value)
+# eps_df["solution_value"] = y_df["variable_object"].apply(
+#    lambda item: item.solution_value)
+#
+#
+# Outputs go into csv
+# x_df.drop(columns=["variable_object"], inplace=True)
+# x_df.to_csv("./x_optimization_solution.csv")
+# y_df.drop(columns=["variable_object"], inplace=True)
+# y_df.to_csv("./y_optimization_solution.csv")
+# eps_df.drop(columns=["variable_object"], inplace=True)
+# eps_df.to_csv("./eps_optimization_solution.csv")

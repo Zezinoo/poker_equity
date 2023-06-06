@@ -6,9 +6,12 @@ Implement combination calculations :
 --> Straight
 --> Flush
 --> Full House
---> Fofak
+--> Fofak <DONE>
 --> StraightFlush
 --> RoyalFlush
+
+Implement method to acess combination strength :
+-> Strength atribute in hand class
 
 Implement combination comparation:
 -> Define Sklansky Groups

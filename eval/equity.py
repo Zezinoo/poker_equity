@@ -1,7 +1,7 @@
 from progressbar import progressbar
+import eval7
 import pandas as pd
 import docplex.mp.model as cpx
-import eval7
 from itertools import combinations, islice, chain
 from pprint import pprint
 from eval7 import Card
@@ -54,20 +54,17 @@ S_3 = '99 ,JTs ,QJs ,ATs,AQo'
 S_4 = 'T9s,KQo,88,QTs,98s,J9s,AJo,KTs'
 
 deck = eval7.Deck()
-test = list(map(Card, ('As', 'Ks', 'Qs', 'Js', 'Ts', '9s',
-            '8s', '7s', '6s', '5s', '4s', '3s', '3s', '2s')))
 
-hero_cards = ('Qs', 'Qd')
+hero_cards = ('As', 'Ad')
 
 hero = list(map(Card, hero_cards))
-
 
 for card in hero:
     deck.cards.remove(card)
 
 comb = return_all_flops(deck)
 
-r_villain = eval7.HandRange(S_2)
+r_villain = eval7.HandRange(S_3)
 
 # Defining features
 # Initializing binary array
@@ -188,6 +185,8 @@ def check_straight(f_ranks, binary):
     elif gaps > 3:
         binary.extend([0, 0, 0, 0, 1])
 
+# Hand Dependent Features F39-73
+
 
 # Testing
 for flop in comb:
@@ -235,7 +234,7 @@ for i in progressbar(range(100)):
     opt_model = cpx.Model(name="MINFEATURES")
 # Parameters
     N_FEATURES = 10
-    ERROR_BOUND = 0.2
+    ERROR_BOUND = 0.1
     m = 19600  # Number of Flops
     n = 38  # Number of Features
     b = all_binaries  # nxm Matrix
@@ -312,12 +311,13 @@ for i in progressbar(range(100)):
 
 # Solving
     solution = opt_model.solve()
-    print(solution.get_value_dict(x_vars))
 
 details = opt_model.solve_details
 print(details.problem_type)
 print(details.status)
+print(solution.model)
 solution.print_mst()
+solution.export("AA_S3", format='json')
 #
 #
 #
@@ -328,25 +328,40 @@ solution.print_mst()
 
 
 # Catching output
-# x_df = pd.DataFrame.from_dict(x_vars, orient="index",
-#                              columns=["variable_object"])
-# y_df = pd.DataFrame.from_dict(y_vars, orient="index",
-#                              columns=["variable_object"])
-# eps_df = pd.DataFrame.from_dict(eps_vars, orient="index",
-#                                columns=["variable_object"])
+
+# x_output
+
+x_df = pd.DataFrame.from_dict(x_vars, orient="index",
+                              columns=["variable_object"])
+x_df.index = pd.Index(x_df.index)
+x_df.reset_index(inplace=True)
+x_df["solution_value"] = x_df["variable_object"].apply(
+    lambda item: item.solution_value)
+
+x_df.drop(columns=["variable_object"], inplace=True)
+x_df.to_csv("./sol_outs/ximization_solution.csv")
+
+# y output
+
+y_df = pd.DataFrame.from_dict(y_vars, orient="index",
+                              columns=["variable_object"])
+y_df.index = pd.Index(y_df.index)
+y_df.reset_index(inplace=True)
+y_df["solution_value"] = y_df["variable_object"].apply(
+    lambda item: item.solution_value)
+
+y_df.drop(columns=["variable_object"], inplace=True)
+y_df.to_csv("./sol_outs/yimization_solution.csv")
+
+# eps_output
+
+eps_df = pd.DataFrame.from_dict(eps_vars, orient="index",
+                                columns=["variable_object"])
+eps_df.index = pd.Index(eps_df.index)
+eps_df.reset_index(inplace=True)
+eps_df["solution_value"] = eps_df["variable_object"].apply(
+    lambda item: item.solution_value)
+
+eps_df.drop(columns=["variable_object"], inplace=True)
+eps_df.to_csv("./sol_outs/epsimization_solution.csv")
 #
-# x_df["solution_value"] = x_df["variable_object"].apply(
-#    lambda item: item.solution_value)
-# y_df["solution_value"] = y_df["variable_object"].apply(
-#    lambda item: item.solution_value)
-# eps_df["solution_value"] = y_df["variable_object"].apply(
-#    lambda item: item.solution_value)
-#
-#
-# Outputs go into csv
-# x_df.drop(columns=["variable_object"], inplace=True)
-# x_df.to_csv("./x_optimization_solution.csv")
-# y_df.drop(columns=["variable_object"], inplace=True)
-# y_df.to_csv("./y_optimization_solution.csv")
-# eps_df.drop(columns=["variable_object"], inplace=True)
-# eps_df.to_csv("./eps_optimization_solution.csv")

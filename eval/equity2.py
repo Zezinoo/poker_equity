@@ -55,7 +55,7 @@ S_4 = 'T9s,KQo,88,QTs,98s,J9s,AJo,KTs'
 
 deck = eval7.Deck()
 
-hero_cards = ('As', 'Ad')
+hero_cards = ('Qs', 'Qd')
 
 hero = list(map(Card, hero_cards))
 
@@ -64,7 +64,7 @@ for card in hero:
 
 comb = return_all_flops(deck)
 
-r_villain = eval7.HandRange(S_3)
+r_villain = eval7.HandRange(S_2)
 
 # Defining features
 # Initializing binary array
@@ -234,7 +234,7 @@ for i in progressbar(range(100)):
     opt_model = cpx.Model(name="MINFEATURES")
 # Parameters
     N_FEATURES = 10
-    ERROR_BOUND = 0.1
+    ERROR_BOUND = 0.2
     m = 19600  # Number of Flops
     n = 38  # Number of Features
     b = all_binaries  # nxm Matrix
@@ -244,9 +244,7 @@ for i in progressbar(range(100)):
 ##
 # epsilon_i for each flop i, the error estimating it
 # x_j the weight of each feature in the estimation
-# y_j binary variable that determines if some constraint j is utilized or not
-#
-# epsilon is real nonnegative
+# y_j binary variable that determines if some constraint j is utilized or not epsilon is real nonnegative
 #
     eps_vars = {i: opt_model.continuous_var(
         lb=0, name="eps_{0}".format(i)) for i in range(m)}
@@ -311,11 +309,12 @@ for i in progressbar(range(100)):
 
 # Solving
     solution = opt_model.solve()
+    details = opt_model.solve_details
+    print(details.problem_type)
+    print(details.status)
+    if details.status == "integer infeasible":
+        print("ok")
 
-details = opt_model.solve_details
-print(details.problem_type)
-print(details.status)
-print(solution.model)
 solution.print_mst()
 solution.export("AA_S3", format='json')
 #

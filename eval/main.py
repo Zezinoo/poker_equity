@@ -1,43 +1,42 @@
+from progressbar import progressbar
 import eval7
-from itertools import combinations
+import pandas as pd
+import docplex.mp.model as cpx
+from itertools import combinations, islice, chain
 from pprint import pprint
 from eval7 import Card
+import numpy as np
+
+from eqcalc import do_all
 
 
-def write_output(hero, villain, comb):
-    file_name = hero_cards[0]+"_" + hero_cards[1]
+def main(tests):
+    S_1 = 'AA,KK,QQ,JJ,AKs'
+    S_2 = 'TT,AQs,AJs,AKo'
+    S_3 = '99 ,JTs ,QJs ,ATs,AQo'
+    S_4 = 'T9s,KQo,88,QTs,98s,J9s,AJo,KTs'
 
-    f = open("./outputs/" + file_name + ".txt", "x")
-
-    for flop in list(comb):
-        f.write("Hand " + str(hero) + "\n")
-        f.write("###########\n")
-        f.write("Flop: \n")
-        f.write(str(flop)+'\n')
-        f.write("Equity: \n")
-        f.write(str(eval7.py_hand_vs_range_exact(hero, r_villain, flop))+"\n")
-
-    f.close()
-
-
-# Sklanksy groups
-S_1 = 'AA,KK,QQ,JJ,AKs'
-S_2 = 'TT,AQs,AJs,AKo'
-S_3 = '99 ,JTs ,QJs ,ATs,AQo'
-S_4 = 'T9s,KQo,88,QTs,98s,J9s,AJo,KTs'
-
-deck = eval7.Deck()
-
-hero_cards = ('As', 'Ad')
-
-hero = list(map(Card, hero_cards))
+    for test in tests:
+        cards = test[0]
+        bound = test[1]
+        rng = test[2]
+        group = []
+        if rng == "S_1":
+            group = S_1
+        elif rng == "S_2":
+            group = S_2
+        elif rng == "S_3":
+            group = S_3
+        elif rng == "S_4":
+            group = S_4
+        do_all(cards, bound, group)
 
 
-for card in hero:
-    deck.cards.remove(card)
+if __name__ == "__main__":
+    all_cards = [("Ks", "Kc")]
+    all_rngs = ["S_1"]
+    tests = [(card, i, rng) for i in [0.15, 0.1, 0.05]
+             for card in all_cards for rng in all_rngs]
+    print(tests)
 
-
-comb = list(combinations(deck.cards, 3))
-r_villain = eval7.HandRange(S_2)
-
-write_output(hero, r_villain, comb)
+    main(tests)

@@ -33,9 +33,9 @@ def main(tests):
 
 
 if __name__ == "__main__":
-    all_cards = [("Ks", "Kc")]
+    all_cards = [("Ks", "Kc"), ("Qs", "Qc"), ("Ks", "Kc"), ("As", "Ks")]
     all_rngs = ["S_1"]
-    tests = [(card, i, rng) for i in [0.15, 0.1, 0.05]
+    tests = [(card, i, rng) for i in [0.01, 0.05, 0.1, 0.15, 0.2]
              for card in all_cards for rng in all_rngs]
     print(tests)
 

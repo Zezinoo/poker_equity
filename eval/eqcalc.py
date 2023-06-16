@@ -468,9 +468,13 @@ def do_all(cards: tuple, bound: float, rng: str):
 #    with open("{0}_E_{1}_{2}.txt".format(str(cards), str(bound), group_name), "w") as sys.stdout:
 #        solution.print_mst()
 #        sys.stdout.close()
-
-    solution.export(str(cards), format='json')
+    solution.print_mst()
+    obj_value = solution.get_objective_value()
+    with open("{0}_E_{1}_{2}.txt".format(str(cards), str(bound), group_name), "w") as f:
+        f.write(str(obj_value))
+        f.close()
 #
+
 #
 #
 #
@@ -492,7 +496,7 @@ def do_all(cards: tuple, bound: float, rng: str):
 
     x_df.drop(columns=["variable_object"], inplace=True)
     x_df.to_csv(
-        "./73_outs/{0}_E_{1}_{2}ximization_solution.csv".format(str(cards), str(bound), group_name))
+        "./73_outs/2{0}_E_{1}_{2}ximization_solution.csv".format(str(cards), str(bound), group_name))
 
 # y output
 
@@ -505,7 +509,7 @@ def do_all(cards: tuple, bound: float, rng: str):
 
     y_df.drop(columns=["variable_object"], inplace=True)
     y_df.to_csv(
-        "./73_outs/{0}_E_{1}_{2}yimization_solution.csv".format(str(cards), str(bound), group_name))
+        "./73_outs/2{0}_E_{1}_{2}yimization_solution.csv".format(str(cards), str(bound), group_name))
 
 # eps_output
 
@@ -518,5 +522,5 @@ def do_all(cards: tuple, bound: float, rng: str):
 
     eps_df.drop(columns=["variable_object"], inplace=True)
     eps_df.to_csv(
-        "./73_outs/{0}_E_{1}_{2}epsimization_solution.csv".format(str(cards), str(bound), group_name))
+        "./73_outs/2{0}_E_{1}_{2}epsimization_solution.csv".format(str(cards), str(bound), group_name))
 #
